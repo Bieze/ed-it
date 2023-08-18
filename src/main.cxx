@@ -1,20 +1,35 @@
-#include <ftxui/dom/elements.hpp>
-#include <ftxui/screen/screen.hpp>
-#include <iostream>
+#include <memory>
+#include <string>
+ 
+#include "ftxui/component/captured_mouse.hpp"
+#include "ftxui/component/component.hpp" 
+#include "ftxui/component/component_base.hpp"
+#include "ftxui/component/component_options.hpp"
+#include "ftxui/component/screen_interactive.hpp"
+#include "ftxui/dom/elements.hpp"
+#include "ftxui/util/ref.hpp"
 
 using namespace std;
  
-int main(void) {
+int main() {
   using namespace ftxui;
-
-  auto screen = Screen::Create(Dimension::Full(), Dimension::Fixed(32));
-  
-  auto& pixel = screen.PixelAt(9,9);
-  pixel.character = U'A';
-  pixel.bold = true;
-  pixel.foreground_color = Color::Blue;
-
-  cout << screen.ToString();
-
-  return EXIT_SUCCESS;
+ 
+  string codeinput;
+ 
+  Component input_code = Input(&codeinput, "ex: print(\"Hello world \")");
+ 
+ 
+  auto component = Container::Vertical({
+    input_code,
+  });
+ 
+  auto renderer = Renderer(component, [&] {
+    return vbox({
+               hbox(text(">> "), input_code->Render()),
+           }) |
+           border;
+  });
+ 
+  auto screen = ScreenInteractive::TerminalOutput();
+  screen.Loop(renderer);
 }
